@@ -1,7 +1,7 @@
 {
   "name": "nats-memory-server",
   "version": "1.1.0",
-  "description": "",
+  "description": "Node.js package for an in-memory NATS server",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,10 +13,14 @@
     "memory",
     "server",
     "NATS",
-    "nats in memory"
+    "development"
   ],
   "author": "Llirik1337",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Llirik1337/nats-memory-server.git"
+  },
   "devDependencies": {
     "@types/decompress": "^4.2.4",
     "@types/download": "^8.0.2",
@@ -27,5 +31,9 @@
   "dependencies": {
     "decompress": "^4.2.1",
     "download": "^8.0.0"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/Llirik1337/nats-memory-server/issues"
+  },
+  "homepage": "https://github.com/Llirik1337/nats-memory-server#readme"
 }
