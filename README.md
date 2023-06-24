@@ -15,6 +15,10 @@
 - Simple API for starting and stopping the server
 - Supports NATS server options
 
+## Requirements
+
+- [Go](https://golang.org/) (version 1.19 or later)
+
 ## Installation
 
 You can install `nats-memory-server` using npm or yarn:
