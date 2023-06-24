@@ -4,6 +4,9 @@
   "description": "Node.js package for an in-memory NATS server",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc"
   },
