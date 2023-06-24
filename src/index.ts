@@ -57,6 +57,7 @@ export class NatsServer {
     });
   }
 
+  // Checks if the NATS server needs to be downloaded and downloads it if necessary
   private static async checkAndDownload(options?: NatsServerOptions) {
     const {
       downloadDir = DEFAULT_NATS_SERVER_CONSTANTS.downloadDir,
