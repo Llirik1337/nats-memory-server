@@ -42,10 +42,11 @@ const NatsMemoryServer = require("nats-memory-server");
 2. Instantiate the server:
 
 ```javascript
-const server = new NatsMemoryServer();
+const server = await NatsMemoryServer.create();
 ```
 
 3. Start the server:
+   if server already start this method throw error
 
 ```javascript
 await server.start();
@@ -54,9 +55,9 @@ await server.start();
 4. Connect your NATS client to the server:
 
 ```javascript
-const NATS = require("nats");
+const NATSClient = require("nats");
 
-const nc = NATS.connect(server.getURI());
+const nc = await NATSClient.connect({ servers: server.getUrl() });
 ```
 
 5. Perform your tests or other operations using the connected NATS client.
