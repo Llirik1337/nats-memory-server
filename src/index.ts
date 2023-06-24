@@ -1,14 +1,16 @@
-import child_process, { SpawnOptionsWithoutStdio } from "node:child_process";
+import child_process from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import net from "node:net";
 
 import download from "download";
 import decompress from "decompress";
+import path from "node:path";
 
 export interface NatsBinaryOpts {
   version?: string;
   downloadDir?: string;
+  executeFileName?: string;
   systemBinary?: string;
 }
 
@@ -24,7 +26,17 @@ export interface NatsServerOptions {
   instance?: NatsMemoryInstancePropT;
   binary?: NatsBinaryOpts;
   autoStart?: false;
+  verbose?: false;
 }
+
+export const DEFAULT_CONSTANTS = {
+  downloadDir: "node_modules/.cache/nats-memory-server",
+  version: "v2.9.16",
+  ip: "0.0.0.0",
+  executeFileName: "nats-server",
+  args: [],
+  verbose: false,
+} as const;
 
 export class NatsServer {
   private process!: child_process.ChildProcessWithoutNullStreams;
@@ -38,30 +50,75 @@ export class NatsServer {
       const srv = net.createServer();
       srv.listen(0, () => {
         const port = (srv.address() as any).port;
-        srv.close((err) => res(port));
+        srv.close(() => res(port));
       });
     });
   }
 
-  private static async checkAndDownload(options?: NatsServerOptions["binary"]) {
-    const { downloadDir = "node_modules/.cache/nats-memory-server" } =
-      options || {};
+  static async checkAndDownload(options?: NatsServerOptions) {
+    const {
+      downloadDir = DEFAULT_CONSTANTS.downloadDir,
+      version = DEFAULT_CONSTANTS.version,
+      executeFileName = DEFAULT_CONSTANTS.executeFileName,
+    } = options?.binary || {};
 
-    const sourceUrl =
-      "https://github.com/nats-io/nats-server/releases/download/v2.9.18/nats-server-v2.9.18-linux-amd64.zip";
+    const { verbose = DEFAULT_CONSTANTS.verbose } = options || {};
+
+    const sourceUrl = `https://github.com/nats-io/nats-server/archive/refs/tags/${version}.zip`;
 
     const natsServerNotDownload = fs.existsSync(downloadDir) === false;
+    const natsServerNotBuilded =
+      fs.existsSync(path.resolve(downloadDir, executeFileName)) === false;
 
     if (natsServerNotDownload) {
+      verbose && console.log("Download sources NATS server");
+
       const fileBuffer = await download(sourceUrl, os.tmpdir());
+
+      verbose && console.log("Downloaded was successful");
+      verbose && console.log("Decompress sources");
+
       await decompress(fileBuffer, downloadDir, { strip: 1 });
+
+      verbose && console.log("Decompress was successful sources");
+    }
+
+    if (natsServerNotBuilded) {
+      return new Promise<void>((resolve, reject) => {
+        const goBuild = child_process.spawn("go", ["build"], {
+          cwd: downloadDir,
+        });
+
+        verbose &&
+          goBuild.on("spawn", () => {
+            console.log("NATS server start building!");
+          });
+
+        verbose &&
+          goBuild.stdout.on("data", (data) => console.log(data.toString()));
+
+        verbose &&
+          goBuild.stderr.on("data", (data) => {
+            console.log(data.toString());
+          });
+
+        goBuild.on("close", (code) => {
+          verbose && console.log("NATS server was builded successful!");
+
+          if (code === 0) {
+            resolve();
+          } else {
+            reject();
+          }
+        });
+      });
     }
   }
 
   static async create(options?: NatsServerOptions): Promise<NatsServer> {
     const { autoStart = true } = options || {};
 
-    await NatsServer.checkAndDownload(options?.binary);
+    await NatsServer.checkAndDownload(options);
 
     const server = new NatsServer(options);
 
@@ -72,31 +129,47 @@ export class NatsServer {
     return server;
   }
 
-  private async start(): Promise<void> {
+  async start(): Promise<void> {
+    const { verbose = DEFAULT_CONSTANTS.verbose } = this.options || {};
+
     const {
-      ip = "127.0.0.1",
-      args = [],
+      ip = DEFAULT_CONSTANTS.ip,
+      args = DEFAULT_CONSTANTS.args,
       port = await NatsServer.getFreePort(),
     } = this.options?.instance || {};
 
-    return new Promise((resolve) => {
+    const {
+      downloadDir = DEFAULT_CONSTANTS.downloadDir,
+      executeFileName = DEFAULT_CONSTANTS.executeFileName,
+    } = this.options?.binary || {};
+
+    const suffix = os.platform() === "win32" ? ".exe" : "";
+
+    return new Promise((resolve, reject) => {
       this.process = child_process.spawn(
-        "node_modules/.cache/nats-memory-server/nats-server",
-        ["--addr", ip, "--port", port?.toString(), ...args]
+        path.resolve(downloadDir, executeFileName) + suffix,
+        ["--addr", ip, "--port", port.toString(), ...args],
+        { stdio: "overlapped" }
       );
 
-      this.process.once("spawn", () => {
-        this.url = `nats://${ip}:${port}`;
+      this.url = `nats://${ip}:${port}`;
 
-        // this.process.stdout.on("data", (data) => {
-        //   console.log(`stdout: ${data}`);
-        // });
+      this.process.stderr.on("data", (data) => {
+        verbose && console.log(data.toString());
 
-        // this.process.stderr.on("data", async (data) => {
-        //   console.error(`stderr: ${data}`);
-        // });
+        if (data?.toString()?.includes("Server is ready")) {
+          resolve();
+        }
+      });
 
-        resolve();
+      this.process.on("close", (code) => {
+        verbose && console.log("NATS server was stop!");
+
+        if (code === 0) {
+          resolve();
+        } else {
+          reject();
+        }
       });
     });
   }
@@ -106,8 +179,12 @@ export class NatsServer {
   }
 
   public async stop() {
+    const { verbose = DEFAULT_CONSTANTS.verbose } = this.options || {};
+
     return new Promise<void>((resolve) => {
       this.process.on("close", (code, signal) => {
+        verbose && console.log("NATS server was stop at:", this.getUrl());
+
         resolve();
       });
 

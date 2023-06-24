@@ -1,11 +1,21 @@
-const { NatsServer } = require("./dist/index");
+const { existsSync } = require("fs");
+const { NatsServer, DEFAULT_CONSTANTS } = require("./dist/index");
+
 const { connect, StringCodec } = require("nats");
 
 (async () => {
-  const server = await NatsServer.create();
+  // await NatsServer.checkAndDownload();
+
+  // console.dir(existsSync(DEFAULT_CONSTANTS.downloadDir + "/nats-server"));
+
+  const server = await NatsServer.create({
+    verbose: true,
+    instance: { port: 4222 },
+  });
 
   try {
     // to create a connection to a nats-server:
+
     const nc = await connect({ servers: server.getUrl() });
 
     // create a codec
