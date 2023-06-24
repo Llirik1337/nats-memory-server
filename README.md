@@ -74,7 +74,7 @@ await server.stop();
 
 That's it! Now you have an in-memory NATS server running for your application.
 
-For more advanced usage and server options, please refer to the [API documentation](https://github.com/Llirik1337/nats-memory-server/blob/main/docs/API.md).
+For more advanced usage and server options, please refer to the [API documentation](https://github.com/Llirik1337/nats-memory-server/blob/main/API.md).
 
 ## Contributing
 
