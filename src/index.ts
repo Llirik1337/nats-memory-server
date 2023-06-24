@@ -29,19 +29,21 @@ export interface NatsServerOptions {
   verbose?: false;
 }
 
-export const DEFAULT_CONSTANTS = {
+export const DEFAULT_NATS_SERVER_CONSTANTS = {
   downloadDir: "node_modules/.cache/nats-memory-server",
   version: "v2.9.16",
   ip: "0.0.0.0",
   executeFileName: "nats-server",
   args: [],
   verbose: false,
+  autoStart: true,
 } as const;
 
 export class NatsServer {
   private process!: child_process.ChildProcessWithoutNullStreams;
 
-  private url!: string;
+  private host!: string;
+  private port!: number;
 
   private constructor(private readonly options?: NatsServerOptions) {}
 
@@ -55,14 +57,14 @@ export class NatsServer {
     });
   }
 
-  static async checkAndDownload(options?: NatsServerOptions) {
+  private static async checkAndDownload(options?: NatsServerOptions) {
     const {
-      downloadDir = DEFAULT_CONSTANTS.downloadDir,
-      version = DEFAULT_CONSTANTS.version,
-      executeFileName = DEFAULT_CONSTANTS.executeFileName,
+      downloadDir = DEFAULT_NATS_SERVER_CONSTANTS.downloadDir,
+      version = DEFAULT_NATS_SERVER_CONSTANTS.version,
+      executeFileName = DEFAULT_NATS_SERVER_CONSTANTS.executeFileName,
     } = options?.binary || {};
 
-    const { verbose = DEFAULT_CONSTANTS.verbose } = options || {};
+    const { verbose = DEFAULT_NATS_SERVER_CONSTANTS.verbose } = options || {};
 
     const sourceUrl = `https://github.com/nats-io/nats-server/archive/refs/tags/${version}.zip`;
 
@@ -116,7 +118,8 @@ export class NatsServer {
   }
 
   static async create(options?: NatsServerOptions): Promise<NatsServer> {
-    const { autoStart = true } = options || {};
+    const { autoStart = DEFAULT_NATS_SERVER_CONSTANTS.autoStart } =
+      options || {};
 
     await NatsServer.checkAndDownload(options);
 
@@ -130,17 +133,22 @@ export class NatsServer {
   }
 
   async start(): Promise<void> {
-    const { verbose = DEFAULT_CONSTANTS.verbose } = this.options || {};
+    if (this.process) {
+      throw new Error(`Nats server already started at ${this.getUrl()}`);
+    }
+
+    const { verbose = DEFAULT_NATS_SERVER_CONSTANTS.verbose } =
+      this.options || {};
 
     const {
-      ip = DEFAULT_CONSTANTS.ip,
-      args = DEFAULT_CONSTANTS.args,
+      ip = DEFAULT_NATS_SERVER_CONSTANTS.ip,
+      args = DEFAULT_NATS_SERVER_CONSTANTS.args,
       port = await NatsServer.getFreePort(),
     } = this.options?.instance || {};
 
     const {
-      downloadDir = DEFAULT_CONSTANTS.downloadDir,
-      executeFileName = DEFAULT_CONSTANTS.executeFileName,
+      downloadDir = DEFAULT_NATS_SERVER_CONSTANTS.downloadDir,
+      executeFileName = DEFAULT_NATS_SERVER_CONSTANTS.executeFileName,
     } = this.options?.binary || {};
 
     const suffix = os.platform() === "win32" ? ".exe" : "";
@@ -152,7 +160,8 @@ export class NatsServer {
         { stdio: "overlapped" }
       );
 
-      this.url = `nats://${ip}:${port}`;
+      this.host = ip;
+      this.port = port;
 
       this.process.stderr.on("data", (data) => {
         verbose && console.log(data.toString());
@@ -175,11 +184,20 @@ export class NatsServer {
   }
 
   public getUrl() {
-    return this.url;
+    return `nats://${this.host}:${this.port}`;
+  }
+
+  public getHost() {
+    return this.host;
+  }
+
+  public getPort() {
+    return this.port;
   }
 
   public async stop() {
-    const { verbose = DEFAULT_CONSTANTS.verbose } = this.options || {};
+    const { verbose = DEFAULT_NATS_SERVER_CONSTANTS.verbose } =
+      this.options || {};
 
     return new Promise<void>((resolve) => {
       this.process.on("close", (code, signal) => {
