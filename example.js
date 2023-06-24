@@ -5,7 +5,6 @@ const { connect, StringCodec } = require("nats");
 (async () => {
   const server = await NatsServer.create({
     verbose: true,
-    instance: { port: 4222 },
   });
 
   try {
