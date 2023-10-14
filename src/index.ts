@@ -35,7 +35,7 @@ export const DEFAULT_NATS_SERVER_CONSTANTS = {
   ip: "0.0.0.0",
   executeFileName: "nats-server",
   args: [],
-  verbose: false,
+  verbose: true,
   autoStart: true,
 } as const;
 
