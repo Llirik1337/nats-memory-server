@@ -90,7 +90,10 @@ export class NatsServer {
       return new Promise<void>((resolve, reject) => {
         const goBuild = child_process.spawn("go", ["build"], {
           cwd: downloadDir,
+          stdio: "pipe",
         });
+
+        goBuild.unref();
 
         verbose &&
           goBuild.on("spawn", () => {
@@ -158,7 +161,7 @@ export class NatsServer {
       this.process = child_process.spawn(
         path.resolve(downloadDir, executeFileName) + suffix,
         ["--addr", ip, "--port", port.toString(), ...args],
-        { stdio: "overlapped" }
+        { stdio: "pipe" }
       );
 
       this.host = ip;
@@ -169,6 +172,7 @@ export class NatsServer {
 
         if (data?.toString()?.includes("Server is ready")) {
           resolve();
+          this.process.unref();
         }
       });
 

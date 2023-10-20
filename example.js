@@ -7,6 +7,7 @@ const { connect, StringCodec } = require("nats");
     verbose: true,
   });
 
+  console.log("Listen on: ", server.getUrl());
   try {
     // to create a connection to a nats-server:
 
