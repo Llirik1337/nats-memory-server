@@ -33,48 +33,9 @@ or
 yarn add nats-memory-server
 ```
 
-## Usage
+## Example
 
-To use `nats-memory-server` in your Node.js application, follow these steps:
-
-1. Import the package:
-
-```javascript
-const NatsMemoryServer = require('nats-memory-server');
-```
-
-2. Instantiate the server:
-
-```javascript
-const server = await NatsMemoryServer.create();
-```
-
-3. Start the server:
-   if server already start this method throw error
-
-```javascript
-await server.start();
-```
-
-4. Connect your NATS client to the server:
-
-```javascript
-const NATSClient = require('nats');
-
-const nc = await NATSClient.connect({ servers: server.getUrl() });
-```
-
-5. Perform your tests or other operations using the connected NATS client.
-
-6. Stop the server:
-
-```javascript
-await server.stop();
-```
-
-That's it! Now you have an in-memory NATS server running for your application.
-
-For more advanced usage and server options, please refer to the [API documentation](https://github.com/Llirik1337/nats-memory-server/blob/main/API.md).
+[example.js](https://github.com/Llirik1337/nats-memory-server/blob/main/example.js)
 
 ## Contributing
 
