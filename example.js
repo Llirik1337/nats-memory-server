@@ -3,9 +3,9 @@ const { NatsServer } = require("./dist/index");
 const { connect, StringCodec } = require("nats");
 
 (async () => {
-  const server = await NatsServer.create({
+  const server = await (await NatsServer.create({
     verbose: true,
-  });
+  })).start();
 
   console.log("Listen on: ", server.getUrl());
   try {
