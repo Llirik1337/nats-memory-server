@@ -40,7 +40,7 @@ To use `nats-memory-server` in your Node.js application, follow these steps:
 1. Import the package:
 
 ```javascript
-const NatsMemoryServer = require("nats-memory-server");
+const NatsMemoryServer = require('nats-memory-server');
 ```
 
 2. Instantiate the server:
@@ -59,7 +59,7 @@ await server.start();
 4. Connect your NATS client to the server:
 
 ```javascript
-const NATSClient = require("nats");
+const NATSClient = require('nats');
 
 const nc = await NATSClient.connect({ servers: server.getUrl() });
 ```

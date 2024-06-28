@@ -1,13 +1,11 @@
-const { NatsServer } = require("./dist/index");
+const { NatsServer, NatsServerBuilder } = require(`./dist/index`);
 
-const { connect, StringCodec } = require("nats");
+const { connect, StringCodec } = require(`nats`);
 
 (async () => {
-  const server = await (await NatsServer.create({
-    verbose: true,
-  })).start();
-
-  console.log("Listen on: ", server.getUrl());
+  const server = await NatsServerBuilder.create().build();
+  await server.start();
+  console.log(`Listen on: `, server.getUrl());
   try {
     // to create a connection to a nats-server:
 
@@ -17,16 +15,16 @@ const { connect, StringCodec } = require("nats");
     const sc = StringCodec();
     // create a simple subscriber and iterate over messages
     // matching the subscription
-    const sub = nc.subscribe("hello");
+    const sub = nc.subscribe(`hello`);
     (async () => {
       for await (const m of sub) {
         console.log(`[${sub.getProcessed()}]: ${sc.decode(m.data)}`);
       }
-      console.log("subscription closed");
+      console.log(`subscription closed`);
     })();
 
-    nc.publish("hello", sc.encode("world"));
-    nc.publish("hello", sc.encode("again"));
+    nc.publish(`hello`, sc.encode(`world`));
+    nc.publish(`hello`, sc.encode(`again`));
 
     // we want to insure that messages that are in flight
     // get processed, so we are going to drain the
