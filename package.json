@@ -5,13 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "scripts"
+    "dist"
   ],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "postinstall": "node ./scripts/download-and-build.js",
+    "postinstall": "node ./dist/scripts/download-and-build.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.ts\""
   },

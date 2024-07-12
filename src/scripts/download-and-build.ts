@@ -1,9 +1,10 @@
-const download = require(`download`);
-const decompress = require(`decompress`);
-const path = require(`path`);
-const fs = require(`fs`);
-const os = require(`os`);
-const child_process = require(`child_process`);
+import download from 'download';
+import decompress from 'decompress';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import child_process from 'child_process';
+import { getNodemodulesPath } from '../utils';
 const packageJsonPath = path.resolve(process.cwd(), `./package.json`);
 
 const { natsMemoryServerConfig = {} } = require(packageJsonPath);
@@ -20,7 +21,9 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
     ...natsMemoryServerConfig,
   };
 
-  const { downloadDir, version, executeFileName } = config; 
+  console.log(getNodemodulesPath());
+
+  const { downloadDir, version, executeFileName } = config;
 
   console.log(`NATS server config:`, config);
 
@@ -28,9 +31,11 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
 
   const sourceUrl = `https://github.com/nats-io/nats-server/archive/refs/tags/${version}.zip`;
 
-  const natsServerNotDownload = !fs.existsSync(path.resolve(process.cwd(),downloadDir));
+  const natsServerNotDownload = !fs.existsSync(
+    path.resolve(process.cwd(), downloadDir),
+  );
   const natsServerNotBuilded = !fs.existsSync(
-    path.resolve(process.cwd(),downloadDir, executeFileName),
+    path.resolve(process.cwd(), downloadDir, executeFileName),
   );
 
   if (natsServerNotDownload && natsServerNotBuilded) {
@@ -38,7 +43,7 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
   }
 
   if (natsServerNotDownload) {
-    fs.mkdirSync(path.resolve(process.cwd(),downloadDir), { recursive: true });
+    fs.mkdirSync(path.resolve(process.cwd(), downloadDir), { recursive: true });
 
     console.log(`Download sources NATS server`);
 
@@ -47,13 +52,15 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
     console.log(`Downloaded was successful`);
     console.log(`Decompress sources`);
 
-    await decompress(fileBuffer, path.resolve(process.cwd(),downloadDir), { strip: 1 });
+    await decompress(fileBuffer, path.resolve(process.cwd(), downloadDir), {
+      strip: 1,
+    });
 
     console.log(`Decompress was successful sources`);
   }
 
   if (natsServerNotBuilded) {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const goBuild = child_process.spawn(`go`, [`build`], {
         cwd: path.resolve(process.cwd(), downloadDir),
         stdio: `pipe`,
