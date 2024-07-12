@@ -5,7 +5,7 @@ import fs from 'fs';
 import os from 'os';
 import child_process from 'child_process';
 import { getNodemodulesPath } from '../utils';
-const packageJsonPath = path.resolve(process.cwd(), `./package.json`);
+const packageJsonPath = path.resolve(`./package.json`);
 
 const { natsMemoryServerConfig = {} } = require(packageJsonPath);
 
