@@ -39,7 +39,7 @@ export class NatsServer {
 
   constructor(private readonly options: NatsServerOptions) {}
 
-  async start(): Promise<void> {
+  async start(): Promise<this> {
     const { verbose, logger } = this.options;
 
     const projectPath = getProjectPath();
@@ -75,7 +75,7 @@ export class NatsServer {
 
     downloadDir = path.resolve(projectPath, downloadDir);
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.process = child_process.spawn(
         path.resolve(downloadDir, executeFileName) + suffix,
         [`--addr`, ip, `--port`, port.toString(), ...args],
@@ -103,7 +103,7 @@ export class NatsServer {
           if (verbose) {
             logger.log(`NATS server is ready!`);
           }
-          resolve();
+          resolve(this);
           this.process?.unref();
         }
       });
@@ -114,7 +114,7 @@ export class NatsServer {
         }
 
         if (code === 0) {
-          resolve();
+          resolve(this);
         } else {
           const message = `Process was killed ${
             code !== null ? `with exit code: ${code}` : ``
