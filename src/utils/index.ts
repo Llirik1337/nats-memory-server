@@ -1,2 +1,2 @@
 export * from './get-free-port';
-export * from './get-nodemodules-path';
+export * from './get-project-path';

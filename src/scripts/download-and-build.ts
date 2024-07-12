@@ -4,8 +4,10 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import child_process from 'child_process';
-import { getNodemodulesPath } from '../utils';
-const packageJsonPath = path.resolve(`./package.json`);
+import { getProjectPath } from '../utils';
+
+const projectPath = getProjectPath();
+const packageJsonPath = path.resolve(projectPath, `./package.json`);
 
 const { natsMemoryServerConfig = {} } = require(packageJsonPath);
 
@@ -21,9 +23,11 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
     ...natsMemoryServerConfig,
   };
 
-  console.log(getNodemodulesPath());
+  const { version, executeFileName } = config;
 
-  const { downloadDir, version, executeFileName } = config;
+  let { downloadDir } = config;
+
+  downloadDir = path.resolve(projectPath, downloadDir);
 
   console.log(`NATS server config:`, config);
 
@@ -31,20 +35,12 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
 
   const sourceUrl = `https://github.com/nats-io/nats-server/archive/refs/tags/${version}.zip`;
 
-  const natsServerNotDownload = !fs.existsSync(
-    path.resolve(process.cwd(), downloadDir),
-  );
+  const natsServerNotDownload = !fs.existsSync(path.resolve(downloadDir));
   const natsServerNotBuilded = !fs.existsSync(
-    path.resolve(process.cwd(), downloadDir, executeFileName),
+    path.resolve(downloadDir, executeFileName),
   );
-
-  if (natsServerNotDownload && natsServerNotBuilded) {
-    console.log(`NATS server not found in cache, download it`);
-  }
 
   if (natsServerNotDownload) {
-    fs.mkdirSync(path.resolve(process.cwd(), downloadDir), { recursive: true });
-
     console.log(`Download sources NATS server`);
 
     const fileBuffer = await download(sourceUrl, os.tmpdir());
@@ -52,7 +48,7 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
     console.log(`Downloaded was successful`);
     console.log(`Decompress sources`);
 
-    await decompress(fileBuffer, path.resolve(process.cwd(), downloadDir), {
+    await decompress(fileBuffer, downloadDir, {
       strip: 1,
     });
 
@@ -62,7 +58,7 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
   if (natsServerNotBuilded) {
     return new Promise<void>((resolve, reject) => {
       const goBuild = child_process.spawn(`go`, [`build`], {
-        cwd: path.resolve(process.cwd(), downloadDir),
+        cwd: downloadDir,
         stdio: `pipe`,
       });
 
