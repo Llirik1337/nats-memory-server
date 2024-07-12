@@ -37,7 +37,7 @@ export class NatsServerBuilder {
     return this;
   }
 
-  async build(): Promise<NatsServer> {
+  build(): NatsServer {
     const server = new NatsServer(this.options);
     return server;
   }
