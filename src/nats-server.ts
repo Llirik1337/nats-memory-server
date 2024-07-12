@@ -1,10 +1,8 @@
 import child_process from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
-import { getFreePort } from './utils';
+import { getFreePort, getProjectPath } from './utils';
 import fs from 'node:fs/promises';
-
-const packageJsonPath = path.resolve(`./package.json`);
 
 export const DEFAULT_NATS_SERVER_CONSTANTS = {
   downloadDir: `node_modules/.cache/nats-memory-server`,
@@ -43,6 +41,17 @@ export class NatsServer {
 
   async start(): Promise<void> {
     const { verbose, logger } = this.options;
+
+    const projectPath = getProjectPath();
+    const packageJsonPath = path.resolve(projectPath, `./package.json`);
+
+    if (verbose) {
+      console.log({
+        projectPath,
+        packageJsonPath,
+      });
+    }
+
     if (this.process != null) {
       const message = `Nats server already started at ${this.getUrl()}`;
       if (verbose) {
@@ -62,7 +71,9 @@ export class NatsServer {
 
     const suffix = os.platform() === `win32` ? `.exe` : ``;
 
-    const { downloadDir, executeFileName } = natsMemoryServerConfig;
+    let { downloadDir, executeFileName } = natsMemoryServerConfig;
+
+    downloadDir = path.resolve(projectPath, downloadDir);
 
     return new Promise<void>((resolve, reject) => {
       this.process = child_process.spawn(
