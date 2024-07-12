@@ -11,17 +11,26 @@ export const DEFAULT_NATS_SERVER_CONSTANTS = {
   executeFileName: `nats-server`,
 } as const;
 
+export interface Logger {
+  log: (message: string, ...args: unknown[]) => void;
+  error: (message: string, ...args: unknown[]) => void;
+  warn: (message: string, ...args: unknown[]) => void;
+  debug: (message: string, ...args: unknown[]) => void;
+}
+
 export interface NatsServerOptions {
   verbose: boolean;
   args: string[];
   port?: number;
   ip: string;
+  logger: Logger;
 }
 
 export const DEFAULT_NATS_SERVER_OPTIONS = {
   verbose: true,
   ip: `0.0.0.0`,
   args: [],
+  logger: console,
 } satisfies NatsServerOptions;
 
 export class NatsServer {
@@ -33,8 +42,13 @@ export class NatsServer {
   constructor(private readonly options: NatsServerOptions) {}
 
   async start(): Promise<void> {
+    const { verbose, logger } = this.options;
     if (this.process != null) {
-      throw new Error(`Nats server already started at ${this.getUrl()}`);
+      const message = `Nats server already started at ${this.getUrl()}`;
+      if (verbose) {
+        logger.warn(message);
+      }
+      // throw new Error(message);
     }
 
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf8`));
@@ -44,7 +58,7 @@ export class NatsServer {
       ...packageJson?.natsMemoryServer,
     };
 
-    const { verbose, args, ip, port = await getFreePort() } = this.options;
+    const { args, ip, port = await getFreePort() } = this.options;
 
     const suffix = os.platform() === `win32` ? `.exe` : ``;
 
@@ -61,31 +75,45 @@ export class NatsServer {
       this.port = port;
 
       this.process.once(`error`, (err) => {
+        if (verbose) {
+          logger.error(`NATS server error:`, err);
+        }
+
         reject(err);
       });
 
       this.process.stderr.on(`data`, (data: unknown) => {
-        verbose && console.log(data?.toString());
+        if (verbose && data != null) {
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
+          logger.error(data.toString());
+        }
 
         if (data?.toString().includes(`Server is ready`) === true) {
+          if (verbose) {
+            logger.log(`NATS server is ready!`);
+          }
           resolve();
           this.process?.unref();
         }
       });
 
       this.process.on(`close`, (code) => {
-        verbose && console.log(`NATS server was stop!`);
+        if (verbose) {
+          logger.log(`NATS server was stop!`);
+        }
 
         if (code === 0) {
           resolve();
         } else {
-          reject(
-            new Error(
-              `Process was killed ${
-                code !== null ? `with exit code: ${code}` : ``
-              } `,
-            ),
-          );
+          const message = `Process was killed ${
+            code !== null ? `with exit code: ${code}` : ``
+          } `;
+
+          if (verbose) {
+            logger.warn(message, code);
+          }
+
+          reject(new Error(message));
         }
       });
     });
@@ -108,11 +136,13 @@ export class NatsServer {
       return;
     }
 
-    const { verbose } = this.options;
+    const { verbose, logger } = this.options;
 
     return new Promise<void>((resolve) => {
       this.process?.on(`close`, (_code, _signal) => {
-        verbose && console.log(`NATS server was stop at:`, this.getUrl());
+        if (verbose) {
+          logger.log(`NATS server was stop at:`, this.getUrl());
+        }
 
         resolve();
       });

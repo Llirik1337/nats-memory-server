@@ -3,9 +3,9 @@ const { NatsServer, NatsServerBuilder } = require(`./dist/index`);
 const { connect, StringCodec } = require(`nats`);
 
 (async () => {
-  const server = await NatsServerBuilder.create().build();
-  await server.start();
+  const server = NatsServerBuilder.create().build().start();
   console.log(`Listen on: `, server.getUrl());
+
   try {
     // to create a connection to a nats-server:
 

@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "preinstall": "node ./scripts/download-and-build.js",
+    "postinstall": "node ./scripts/download-and-build.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.ts\""
   },

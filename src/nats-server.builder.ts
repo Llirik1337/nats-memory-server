@@ -2,6 +2,7 @@ import {
   type NatsServerOptions,
   NatsServer,
   DEFAULT_NATS_SERVER_OPTIONS,
+  type Logger,
 } from './index';
 
 export class NatsServerBuilder {
@@ -34,6 +35,11 @@ export class NatsServerBuilder {
 
   setArgs(args: string[]): this {
     this.options = { ...this.options, args };
+    return this;
+  }
+
+  setLogger(logger: Logger): this {
+    this.options = { ...this.options, logger };
     return this;
   }
 
