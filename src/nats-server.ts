@@ -45,19 +45,14 @@ export class NatsServer {
     const projectPath = getProjectPath();
     const packageJsonPath = path.resolve(projectPath, `./package.json`);
 
-    if (verbose) {
-      console.log({
-        projectPath,
-        packageJsonPath,
-      });
-    }
-
     if (this.process != null) {
       const message = `Nats server already started at ${this.getUrl()}`;
+
       if (verbose) {
         logger.warn(message);
       }
-      // throw new Error(message);
+
+      return this;
     }
 
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf8`));
@@ -113,7 +108,7 @@ export class NatsServer {
           logger.log(`NATS server was stop!`);
         }
 
-        if (code === 0) {
+        if (code === 0 || code === 1) {
           resolve(this);
         } else {
           const message = `Process was killed ${
@@ -158,7 +153,7 @@ export class NatsServer {
         resolve();
       });
 
-      this.process?.kill(`SIGTERM`);
+      this.process?.kill();
     });
   }
 }
