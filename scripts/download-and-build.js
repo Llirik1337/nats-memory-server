@@ -4,7 +4,7 @@ const path = require(`path`);
 const fs = require(`fs`);
 const os = require(`os`);
 const child_process = require(`child_process`);
-const packageJsonPath = path.resolve(`./package.json`);
+const packageJsonPath = path.resolve(process.cwd(), `./package.json`);
 
 const { natsMemoryServerConfig = {} } = require(packageJsonPath);
 
@@ -15,19 +15,31 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
 };
 
 (async function () {
-  const { downloadDir, version, executeFileName } = {
+  const config = {
     ...DEFAULT_NATS_SERVER_CONSTANTS,
     ...natsMemoryServerConfig,
   };
 
+  const { downloadDir, version, executeFileName } = config; 
+
+  console.log(`NATS server config:`, config);
+
+  console.log(`NATS server start download!`);
+
   const sourceUrl = `https://github.com/nats-io/nats-server/archive/refs/tags/${version}.zip`;
 
-  const natsServerNotDownload = !fs.existsSync(downloadDir);
+  const natsServerNotDownload = !fs.existsSync(path.resolve(process.cwd(),downloadDir));
   const natsServerNotBuilded = !fs.existsSync(
-    path.resolve(downloadDir, executeFileName),
+    path.resolve(process.cwd(),downloadDir, executeFileName),
   );
 
+  if (natsServerNotDownload && natsServerNotBuilded) {
+    console.log(`NATS server not found in cache, download it`);
+  }
+
   if (natsServerNotDownload) {
+    fs.mkdirSync(path.resolve(process.cwd(),downloadDir), { recursive: true });
+
     console.log(`Download sources NATS server`);
 
     const fileBuffer = await download(sourceUrl, os.tmpdir());
@@ -35,7 +47,7 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
     console.log(`Downloaded was successful`);
     console.log(`Decompress sources`);
 
-    await decompress(fileBuffer, downloadDir, { strip: 1 });
+    await decompress(fileBuffer, path.resolve(process.cwd(),downloadDir), { strip: 1 });
 
     console.log(`Decompress was successful sources`);
   }
@@ -43,7 +55,7 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
   if (natsServerNotBuilded) {
     return new Promise((resolve, reject) => {
       const goBuild = child_process.spawn(`go`, [`build`], {
-        cwd: downloadDir,
+        cwd: path.resolve(process.cwd(), downloadDir),
         stdio: `pipe`,
       });
 
