@@ -33,6 +33,7 @@ yarn add nats-memory-server
 ### Plans
 
 - [ ] Write tests
+- [ ] Remove dependencies
 
 ## Contributing
 

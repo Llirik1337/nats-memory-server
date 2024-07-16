@@ -16,11 +16,16 @@
   },
   "keywords": [
     "nats",
-    "nats",
     "memory",
     "server",
     "NATS",
-    "development"
+    "development",
+    "natsmem",
+    "tests",
+    "mock",
+    "stub",
+    "nats-prebuilt",
+    "memory-server"
   ],
   "lint-staged": {
     "src/**/*.{js,ts,json}": [
