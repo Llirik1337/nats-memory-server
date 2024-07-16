@@ -1,8 +1,10 @@
-# nats-memory-server
+# NATS In-Memory Server
 
 [![GitHub license](https://img.shields.io/github/license/Llirik1337/nats-memory-server)](https://github.com/Llirik1337/nats-memory-server/blob/main/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/Llirik1337/nats-memory-server)](https://github.com/Llirik1337/nats-memory-server/issues)
 [![GitHub stars](https://img.shields.io/github/stars/Llirik1337/nats-memory-server)](https://github.com/Llirik1337/nats-memory-server/stargazers)
+
+# Description
 
 `nats-memory-server` is a Node.js package that provides an in-memory NATS server for testing and other purposes. It allows you to quickly set up and tear down a NATS server instance within your Node.js applications, making it easier to write tests and perform other operations that require a NATS server.
 
@@ -27,6 +29,10 @@ yarn add nats-memory-server
 ## Example
 
 [example.js](https://github.com/Llirik1337/nats-memory-server/blob/main/example.js)
+
+### Plans
+
+- [ ] Write tests
 
 ## Contributing
 
