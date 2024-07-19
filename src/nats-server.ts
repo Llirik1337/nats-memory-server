@@ -1,8 +1,8 @@
-import child_process from 'node:child_process';
-import os from 'node:os';
-import path from 'node:path';
+import child_process from 'child_process';
+import os from 'os';
+import path from 'path';
 import { getFreePort, getProjectPath } from './utils';
-import fs from 'node:fs/promises';
+import fs from 'fs/promises';
 
 export const DEFAULT_NATS_SERVER_CONSTANTS = {
   downloadDir: `node_modules/.cache/nats-memory-server`,

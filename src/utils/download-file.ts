@@ -1,8 +1,8 @@
-import { type IncomingMessage } from 'node:http';
+import { type IncomingMessage } from 'http';
 import http from 'http';
 import https from 'https';
-import path from 'node:path';
-import { createWriteStream } from 'node:fs';
+import path from 'path';
+import { createWriteStream } from 'fs';
 
 export const EXPECTED_CONTENT_TYPE = `application/zip`;
 const CONTENT_TYPE_KEY = `content-type`;
