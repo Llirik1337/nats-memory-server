@@ -1,10 +1,9 @@
-import download from 'download';
 import decompress from 'decompress';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import child_process from 'child_process';
-import { getProjectPath } from '../utils';
+import { downloadFile, getProjectPath } from '../utils';
 
 const projectPath = getProjectPath();
 const packageJsonPath = path.resolve(projectPath, `./package.json`);
@@ -43,12 +42,12 @@ const DEFAULT_NATS_SERVER_CONSTANTS = {
   if (natsServerNotDownload) {
     console.log(`Download sources NATS server`);
 
-    const fileBuffer = await download(sourceUrl, os.tmpdir());
+    const filePath = await downloadFile(sourceUrl, os.tmpdir());
 
     console.log(`Downloaded was successful`);
     console.log(`Decompress sources`);
 
-    await decompress(fileBuffer, downloadDir, {
+    await decompress(filePath, downloadDir, {
       strip: 1,
     });
 

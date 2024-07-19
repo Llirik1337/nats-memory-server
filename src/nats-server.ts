@@ -91,7 +91,7 @@ export class NatsServer {
       this.process.stderr.on(`data`, (data: unknown) => {
         if (verbose && data != null) {
           // eslint-disable-next-line @typescript-eslint/no-base-to-string
-          logger.error(data.toString());
+          logger.log(data.toString());
         }
 
         if (data?.toString().includes(`Server is ready`) === true) {

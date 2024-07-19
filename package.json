@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "@types/decompress": "^4.2.4",
-    "@types/download": "^8.0.2",
     "@types/node": "^18.16.18",
     "nats": "^2.15.0",
     "prettier": "^2.8.8",
@@ -60,8 +59,7 @@
     "husky": "^8.0.3"
   },
   "dependencies": {
-    "decompress": "^4.2.1",
-    "download": "^8.0.0"
+    "decompress": "^4.2.1"
   },
   "bugs": {
     "url": "https://github.com/Llirik1337/nats-memory-server/issues"
