@@ -12,11 +12,11 @@ async function get(url: string): Promise<IncomingMessage> {
   const urlObj = new URL(url);
 
   if (urlObj.protocol === `https:`) {
-    return new Promise<IncomingMessage>((resolve) => {
+    return await new Promise<IncomingMessage>((resolve) => {
       https.get(url, resolve);
     });
   } else if (urlObj.protocol === `http:`) {
-    return new Promise<IncomingMessage>((resolve) => {
+    return await new Promise<IncomingMessage>((resolve) => {
       http.get(url, resolve);
     });
   }
@@ -43,7 +43,7 @@ export async function downloadFile(url: string, dir = `./`): Promise<string> {
     }
   }
 
-  return new Promise<string>((resolve) => {
+  return await new Promise<string>((resolve) => {
     const contentType = response?.headers[CONTENT_TYPE_KEY];
     if (contentType !== EXPECTED_CONTENT_TYPE) {
       throw new Error(

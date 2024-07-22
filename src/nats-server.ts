@@ -2,7 +2,10 @@ import child_process from 'child_process';
 import os from 'os';
 import path from 'path';
 import { getFreePort, getProjectPath } from './utils';
-import fs from 'fs/promises';
+import fs from 'fs';
+import { promisify } from 'util';
+
+const readFilePromise = promisify(fs.readFile);
 
 export const DEFAULT_NATS_SERVER_CONSTANTS = {
   downloadDir: `node_modules/.cache/nats-memory-server`,
@@ -55,7 +58,12 @@ export class NatsServer {
       return this;
     }
 
-    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, `utf8`));
+    const packageJsonFileContent = await readFilePromise(
+      packageJsonPath,
+      `utf8`,
+    );
+
+    const packageJson = JSON.parse(packageJsonFileContent);
 
     const natsMemoryServerConfig = {
       ...DEFAULT_NATS_SERVER_CONSTANTS,
@@ -70,7 +78,7 @@ export class NatsServer {
 
     downloadDir = path.resolve(projectPath, downloadDir);
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.process = child_process.spawn(
         path.resolve(downloadDir, executeFileName) + suffix,
         [`--addr`, ip, `--port`, port.toString(), ...args],
@@ -144,7 +152,7 @@ export class NatsServer {
 
     const { verbose, logger } = this.options;
 
-    return new Promise<void>((resolve) => {
+    await new Promise<void>((resolve) => {
       this.process?.on(`close`, (_code, _signal) => {
         if (verbose) {
           logger.log(`NATS server was stop at:`, this.getUrl());

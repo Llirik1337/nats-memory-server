@@ -1,13 +1,14 @@
 {
   "env": {
     "node": true,
+    "jest": true,
     "es6": true
   },
   "extends": [
     "standard-with-typescript",
     "eslint:recommended",
+    "plugin:jest/recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/strict",
     "plugin:prettier/recommended",
     "prettier"
   ],
@@ -16,13 +17,14 @@
     "project": true,
     "tsconfigRootDir": "."
   },
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": ["@typescript-eslint", "jest", "prettier"],
   "rules": {
     "prettier/prettier": "error",
     "arrow-body-style": "off",
     "prefer-arrow-callback": "off",
     "@typescript-eslint/quotes": ["error", "backtick"],
-    "@typescript-eslint/return-await": "off"
+    "@typescript-eslint/no-mixed-enums": "error",
+    "jest/valid-title": "off"
   },
   "root": true
 }
