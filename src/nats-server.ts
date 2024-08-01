@@ -1,17 +1,5 @@
 import child_process from 'child_process';
-import os from 'os';
-import path from 'path';
-import { getFreePort, getProjectPath } from './utils';
-import fs from 'fs';
-import { promisify } from 'util';
-
-const readFilePromise = promisify(fs.readFile);
-
-export const DEFAULT_NATS_SERVER_CONSTANTS = {
-  downloadDir: `node_modules/.cache/nats-memory-server`,
-  executeFileName: `nats-server`,
-} as const;
-
+import { getFreePort, getProjectConfig, getProjectPath } from './utils';
 export interface Logger {
   log: (message: string, ...args: unknown[]) => void;
   error: (message: string, ...args: unknown[]) => void;
@@ -25,6 +13,7 @@ export interface NatsServerOptions {
   port?: number;
   ip: string;
   logger: Logger;
+  binPath?: string;
 }
 
 export const DEFAULT_NATS_SERVER_OPTIONS = {
@@ -45,9 +34,6 @@ export class NatsServer {
   async start(): Promise<this> {
     const { verbose, logger } = this.options;
 
-    const projectPath = getProjectPath();
-    const packageJsonPath = path.resolve(projectPath, `./package.json`);
-
     if (this.process != null) {
       const message = `Nats server already started at ${this.getUrl()}`;
 
@@ -58,29 +44,15 @@ export class NatsServer {
       return this;
     }
 
-    const packageJsonFileContent = await readFilePromise(
-      packageJsonPath,
-      `utf8`,
-    );
+    const projectPath = getProjectPath();
+    const projectConfig = getProjectConfig(projectPath);
 
-    const packageJson = JSON.parse(packageJsonFileContent);
-
-    const natsMemoryServerConfig = {
-      ...DEFAULT_NATS_SERVER_CONSTANTS,
-      ...packageJson?.natsMemoryServer,
-    };
-
-    const { args, ip, port = await getFreePort() } = this.options;
-
-    const suffix = os.platform() === `win32` ? `.exe` : ``;
-
-    let { downloadDir, executeFileName } = natsMemoryServerConfig;
-
-    downloadDir = path.resolve(projectPath, downloadDir);
+    const config = { ...projectConfig, ...this.options };
+    const { args, ip, port = await getFreePort(), binPath } = config;
 
     return await new Promise((resolve, reject) => {
       this.process = child_process.spawn(
-        path.resolve(downloadDir, executeFileName) + suffix,
+        binPath,
         [`--addr`, ip, `--port`, port.toString(), ...args],
         { stdio: `pipe` },
       );

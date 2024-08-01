@@ -4,8 +4,6 @@ import https from 'https';
 import path from 'path';
 import { createWriteStream } from 'fs';
 
-export const EXPECTED_CONTENT_TYPE = `application/zip`;
-const CONTENT_TYPE_KEY = `content-type`;
 const CONTENT_DISPOSITION_KEY = `content-disposition`;
 
 async function get(url: string): Promise<IncomingMessage> {
@@ -44,14 +42,6 @@ export async function downloadFile(url: string, dir = `./`): Promise<string> {
   }
 
   return await new Promise<string>((resolve) => {
-    const contentType = response?.headers[CONTENT_TYPE_KEY];
-    if (contentType !== EXPECTED_CONTENT_TYPE) {
-      throw new Error(
-        `Wrong content type ${
-          contentType ?? `undefined`
-        }. Expected ${EXPECTED_CONTENT_TYPE}`,
-      );
-    }
     const fileName =
       response?.headers[CONTENT_DISPOSITION_KEY]?.split(`filename=`)?.[1];
 

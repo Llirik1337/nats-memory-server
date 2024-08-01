@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc -p ./tsconfig.build.json",
     "prepublishOnly": "npm run build",
-    "postinstall": "node ./dist/scripts/download-and-build.js",
+    "postinstall": "node ./dist/scripts/download.js && node ./dist/scripts/build.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.ts\"",
     "test": "jest"

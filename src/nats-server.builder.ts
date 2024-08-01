@@ -18,6 +18,11 @@ export class NatsServerBuilder {
     return new NatsServerBuilder(options);
   }
 
+  setBinPath(binPath: string): this {
+    this.options = { ...this.options, binPath };
+    return this;
+  }
+
   setVerbose(verbose: boolean): this {
     this.options = { ...this.options, verbose };
     return this;
