@@ -26,6 +26,82 @@ or
 yarn add nats-memory-server
 ```
 
+## Configuration
+
+Default configuration is:  
+- download: true
+- downloadDir: 'node_modules/.cache/nats-memory-server'
+- version: 'v2.9.16'
+- buildFromSource: false
+- binPath: 'node_modules/.cache/nats-memory-server/nats-server'
+
+For configuration, you can create one of the files:
+- nats-memory-server.json
+- nats-memory-server.js
+- nats-memory-server.ts
+
+### nats-memory-server.json
+
+```json
+{
+  "download": true,
+  "downloadDir": "node_modules/.cache/nats-memory-server",
+  "version": "v2.9.16",
+  "buildFromSource": false,
+  "binPath": "node_modules/.cache/nats-memory-server/nats-server",
+}
+```
+
+### nats-memory-server.js
+
+```js
+/**
+ * @type {import('nats-memory-server').NatsMemoryServerConfig}
+ */
+const config = {
+  download: true,
+  downloadDir: 'node_modules/.cache/nats-memory-server',
+  version: 'v2.9.16',
+  buildFromSource: false,
+  binPath: 'node_modules/.cache/nats-memory-server/nats-server',
+}
+
+module.exports = config
+```
+
+### nats-memory-server.ts
+
+```ts
+import type { NatsMemoryServerConfig } from 'nats-memory-server';
+
+const config: NatsMemoryServerConfig = {
+  download: true,
+  downloadDir: 'node_modules/.cache/nats-memory-server',
+  version: 'v2.9.16',
+  buildFromSource: false,
+  binPath: 'node_modules/.cache/nats-memory-server/nats-server',
+};
+
+export default config;
+```
+
+### Configuration in `package.json`
+You can declare the configurations in `package.json` in the `natsMemoryServer` field
+
+```json
+{
+  ....
+  "natsMemoryServer": {
+    "download": true,
+    "downloadDir": "node_modules/.cache/nats-memory-server",
+    "version": "v2.9.16",
+    "buildFromSource": false,
+    "binPath": "node_modules/.cache/nats-memory-server/nats-server"
+  },
+  ...
+}
+```
+
 ## Example
 
 [example.js](https://github.com/Llirik1337/nats-memory-server/blob/main/example.js)
