@@ -1,8 +1,34 @@
 import path, { isAbsolute } from 'path';
 import fs from 'fs';
 
-const configKey = `natsMemoryServer`;
-const configFileName = `nats-memory-server-config.json`;
+const configKey = `natsMemoryServer` as const;
+const configFileBaseName = `nats-memory-server` as const;
+const allowedExtensions = [`.ts`, `.js`, `.json`] as const;
+
+const readFileMap = {
+  '.ts': (filePath: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/quotes
+    const tsNode = require('ts-node');
+
+    if (tsNode == null) {
+      throw new Error(`ts-node is not installed`);
+    }
+
+    tsNode.register();
+    return require(filePath);
+  },
+  '.js': (filePath: string) => require(filePath),
+  '.json': (filePath: string) => JSON.parse(fs.readFileSync(filePath, `utf8`)),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} satisfies Record<(typeof allowedExtensions)[number], (path: string) => any>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function readFile(filePath: string): any {
+  const ext = path.extname(filePath).toLowerCase();
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  return readFileMap[ext](filePath);
+}
 
 export interface NatsMemoryServerConfig {
   download: boolean;
@@ -43,19 +69,24 @@ function prepareConfig(
 }
 
 export function getProjectConfig(projectPath: string): NatsMemoryServerConfig {
-  const projectConfigPath = path.resolve(projectPath, `./${configFileName}`);
+  const projectConfigPath = allowedExtensions
+    .map((ext) => path.resolve(projectPath, `./${configFileBaseName}${ext}`))
+    .find((filePath) => fs.existsSync(filePath));
+
   const packageJsonPath = path.resolve(projectPath, `./package.json`);
 
   let config: NatsMemoryServerConfig;
 
-  if (fs.existsSync(projectConfigPath)) {
+  if (projectConfigPath !== undefined) {
     config = {
       ...defaultConfig,
-      ...JSON.parse(fs.readFileSync(projectConfigPath, `utf8`)),
+      ...readFile(projectConfigPath),
     };
   } else if (fs.existsSync(packageJsonPath)) {
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, `utf8`));
-    config = { ...defaultConfig, ...packageJson[configKey] };
+    config = {
+      ...defaultConfig,
+      ...readFile(packageJsonPath)[configKey],
+    };
   } else {
     config = defaultConfig;
   }

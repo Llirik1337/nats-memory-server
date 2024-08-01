@@ -8,9 +8,9 @@
 
 `nats-memory-server` is a Node.js package that provides an in-memory NATS server for testing and other purposes. It allows you to quickly set up and tear down a NATS server instance within your Node.js applications, making it easier to write tests and perform other operations that require a NATS server.
 
-## Requirements
+## Requirements 
 
-- [Go](https://golang.org/) (version 1.19 or later)
+- [Go](https://golang.org/) (Optional. Only if you build from source) (version 1.19 or later)
 
 ## Installation
 
@@ -32,8 +32,8 @@ yarn add nats-memory-server
 
 ### Plans
 
-- [ ] Write tests
-- [ ] Remove dependencies
+- [x] Write tests
+- [x] Remove dependencies (Removed download dependency)
 
 ## Contributing
 
