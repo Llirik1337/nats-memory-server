@@ -8,7 +8,7 @@
 
 `nats-memory-server` is a Node.js package that provides an in-memory NATS server for testing and other purposes. It allows you to quickly set up and tear down a NATS server instance within your Node.js applications, making it easier to write tests and perform other operations that require a NATS server.
 
-## Requirements 
+## Requirements
 
 - [Go](https://golang.org/) (Optional. Only if you build from source) (version 1.19 or later)
 
@@ -28,7 +28,8 @@ yarn add nats-memory-server
 
 ## Configuration
 
-Default configuration is:  
+Default configuration is:
+
 - download: true
 - downloadDir: 'node_modules/.cache/nats-memory-server'
 - version: 'v2.9.16'
@@ -36,6 +37,7 @@ Default configuration is:
 - binPath: 'node_modules/.cache/nats-memory-server/nats-server'
 
 For configuration, you can create one of the files:
+
 - nats-memory-server.json
 - nats-memory-server.js
 - nats-memory-server.ts
@@ -48,7 +50,7 @@ For configuration, you can create one of the files:
   "downloadDir": "node_modules/.cache/nats-memory-server",
   "version": "v2.9.16",
   "buildFromSource": false,
-  "binPath": "node_modules/.cache/nats-memory-server/nats-server",
+  "binPath": "node_modules/.cache/nats-memory-server/nats-server"
 }
 ```
 
@@ -64,9 +66,9 @@ const config = {
   version: 'v2.9.16',
   buildFromSource: false,
   binPath: 'node_modules/.cache/nats-memory-server/nats-server',
-}
+};
 
-module.exports = config
+module.exports = config;
 ```
 
 ### nats-memory-server.ts
@@ -86,6 +88,7 @@ export default config;
 ```
 
 ### Configuration in `package.json`
+
 You can declare the configurations in `package.json` in the `natsMemoryServer` field
 
 ```json
