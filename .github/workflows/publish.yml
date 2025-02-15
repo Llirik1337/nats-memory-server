@@ -28,7 +28,6 @@ jobs:
       - name: Test
         run: npm test
 
-      # Публикуем только при условии, что предыдущие шаги прошли успешно:
       - name: Publish
         if: ${{ success() }}
         run: npm publish
