@@ -4,6 +4,17 @@
 [![GitHub issues](https://img.shields.io/github/issues/Llirik1337/nats-memory-server)](https://github.com/Llirik1337/nats-memory-server/issues)
 [![GitHub stars](https://img.shields.io/github/stars/Llirik1337/nats-memory-server)](https://github.com/Llirik1337/nats-memory-server/stargazers)
 
+
+## Table of Contents
+1. [Description](#description)
+2. [Requirements](#requirements)
+3. [Installation](#installation)
+4. [Configuration](#configuration)
+5. [NATS Jetstream](#nats-jetstream)
+6. [Example](#example)
+7. [Contributing](#contributing)
+
+
 # Description
 
 `nats-memory-server` is a Node.js package that provides an in-memory NATS server for testing and other purposes. It allows you to quickly set up and tear down a NATS server instance within your Node.js applications, making it easier to write tests and perform other operations that require a NATS server.
@@ -93,7 +104,6 @@ You can declare the configurations in `package.json` in the `natsMemoryServer` f
 
 ```json
 {
-  ....
   "natsMemoryServer": {
     "download": true,
     "downloadDir": "node_modules/.cache/nats-memory-server",
@@ -101,18 +111,31 @@ You can declare the configurations in `package.json` in the `natsMemoryServer` f
     "buildFromSource": false,
     "binPath": "node_modules/.cache/nats-memory-server/nats-server"
   },
-  ...
 }
+```
+
+## NATS Jetstream
+
+You may use a method in the builder setArgs to pass the parameters
+```ts
+await NatsServerBuilder
+      .create()
+      .setArgs([`--jetstream`, `--store_dir`, os.tmpdir()])
+      .build()
+      .start();
+```
+
+Or you can pass it through the constructor
+```ts
+new NatsServer({
+  ...DEFAULT_NATS_SERVER_OPTIONS,
+  args: [`--jetstream`, `--store_dir`, os.tmpdir()],
+});
 ```
 
 ## Example
 
 [example.js](https://github.com/Llirik1337/nats-memory-server/blob/main/example.js)
-
-### Plans
-
-- [x] Write tests
-- [x] Remove dependencies (Removed download dependency)
 
 ## Contributing
 

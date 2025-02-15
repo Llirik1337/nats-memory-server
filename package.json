@@ -26,7 +26,23 @@
     "mock",
     "stub",
     "nats-prebuilt",
-    "memory-server"
+    "memory-server",
+    "nodejs",
+    "typescript",
+    "nats-server",
+    "test",
+    "integration-testing",
+    "mock-server",
+    "pub-sub",
+    "messaging",
+    "broker",
+    "event-bus",
+    "microservices",
+    "local-development",
+    "ci",
+    "jest",
+    "devtools",
+    "automation"
   ],
   "lint-staged": {
     "src/**/*.{js,ts,json}": [
