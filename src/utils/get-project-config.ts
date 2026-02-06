@@ -101,7 +101,9 @@ function prepareConfig(
   };
 }
 
-export async function getProjectConfig(
+const projectConfigCache = new Map<string, Promise<NatsMemoryServerConfig>>();
+
+async function getProjectConfigUncached(
   projectPath: string,
 ): Promise<NatsMemoryServerConfig> {
   const possibleConfigPaths = allowedExtensions.map((ext) =>
@@ -152,4 +154,17 @@ export async function getProjectConfig(
   }
 
   return prepareConfig(config, projectPath);
+}
+
+export async function getProjectConfig(
+  projectPath: string,
+): Promise<NatsMemoryServerConfig> {
+  if (projectConfigCache.has(projectPath)) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return await projectConfigCache.get(projectPath)!;
+  }
+
+  const configPromise = getProjectConfigUncached(projectPath);
+  projectConfigCache.set(projectPath, configPromise);
+  return await configPromise;
 }
