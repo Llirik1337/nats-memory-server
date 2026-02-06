@@ -1,0 +1,60 @@
+import { NatsServerBuilder } from './nats-server.builder';
+import { DEFAULT_NATS_SERVER_OPTIONS } from './nats-server';
+
+describe(NatsServerBuilder.name, () => {
+  it('Should create builder with default options', () => {
+    const builder = NatsServerBuilder.create();
+    const server = builder.build();
+    expect((server as any).options).toEqual(DEFAULT_NATS_SERVER_OPTIONS);
+  });
+
+  it('Should set custom options via create', () => {
+    const customOptions = { port: 1234, verbose: false };
+    const builder = NatsServerBuilder.create(customOptions);
+    const server = builder.build();
+    expect((server as any).options).toMatchObject(customOptions);
+  });
+
+  it('Should set binPath', () => {
+    const builder = NatsServerBuilder.create().setBinPath('/tmp/nats-server');
+    const server = builder.build();
+    expect((server as any).options.binPath).toBe('/tmp/nats-server');
+  });
+
+  it('Should set verbose', () => {
+    const builder = NatsServerBuilder.create().setVerbose(false);
+    const server = builder.build();
+    expect((server as any).options.verbose).toBe(false);
+  });
+
+  it('Should set port', () => {
+    const builder = NatsServerBuilder.create().setPort(4222);
+    const server = builder.build();
+    expect((server as any).options.port).toBe(4222);
+  });
+
+  it('Should set ip', () => {
+    const builder = NatsServerBuilder.create().setIp('127.0.0.1');
+    const server = builder.build();
+    expect((server as any).options.ip).toBe('127.0.0.1');
+  });
+
+  it('Should set args', () => {
+    const args = ['--user', 'foo'];
+    const builder = NatsServerBuilder.create().setArgs(args);
+    const server = builder.build();
+    expect((server as any).options.args).toBe(args);
+  });
+
+  it('Should set logger', () => {
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+    };
+    const builder = NatsServerBuilder.create().setLogger(logger);
+    const server = builder.build();
+    expect((server as any).options.logger).toBe(logger);
+  });
+});
