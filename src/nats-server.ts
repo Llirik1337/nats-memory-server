@@ -1,5 +1,10 @@
 import child_process from 'child_process';
-import { getFreePort, getProjectConfig, getProjectPath } from './utils';
+import {
+  getFreePort,
+  getProjectConfig,
+  getProjectPath,
+  type NatsMemoryServerConfig,
+} from './utils';
 export interface Logger {
   log: (message: string, ...args: unknown[]) => void;
   error: (message: string, ...args: unknown[]) => void;
@@ -24,6 +29,7 @@ export const DEFAULT_NATS_SERVER_OPTIONS = {
 } satisfies NatsServerOptions;
 
 export class NatsServer {
+  private static projectConfigPromise?: Promise<NatsMemoryServerConfig>;
   private process?: child_process.ChildProcessWithoutNullStreams;
 
   private host!: string;
@@ -44,8 +50,12 @@ export class NatsServer {
       return this;
     }
 
-    const projectPath = getProjectPath();
-    const projectConfig = await getProjectConfig(projectPath);
+    if (NatsServer.projectConfigPromise === undefined) {
+      const projectPath = getProjectPath();
+      NatsServer.projectConfigPromise = getProjectConfig(projectPath);
+    }
+
+    const projectConfig = await NatsServer.projectConfigPromise;
 
     const config = { ...projectConfig, ...this.options };
     const { args, ip, port = await getFreePort(), binPath } = config;
