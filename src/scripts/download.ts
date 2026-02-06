@@ -24,9 +24,16 @@ process.nextTick(async function () {
       version,
       buildFromSource,
       downloadUrl = getUrl(version, getPlatform(), getArch(), buildFromSource),
+      httpProxy,
+      httpsProxy,
+      noProxy,
     } = config;
 
-    const filePath = await downloadFile(downloadUrl, os.tmpdir());
+    const filePath = await downloadFile(downloadUrl, os.tmpdir(), {
+      httpProxy,
+      httpsProxy,
+      noProxy,
+    });
 
     console.log(`Downloaded was successful`);
 

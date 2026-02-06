@@ -70,6 +70,9 @@ export interface NatsMemoryServerConfig {
   buildFromSource: boolean;
   binPath: string;
   downloadUrl?: string;
+  httpProxy?: string;
+  httpsProxy?: string;
+  noProxy?: string;
 }
 
 const defaultConfig: NatsMemoryServerConfig = {

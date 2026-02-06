@@ -63,6 +63,7 @@
   "devDependencies": {
     "@types/decompress": "^4.2.4",
     "@types/jest": "^29.5.2",
+    "@types/make-fetch-happen": "^10.0.4",
     "@types/node": "^18.16.18",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
@@ -84,7 +85,8 @@
     "typescript": "^5.1.5"
   },
   "dependencies": {
-    "decompress": "^4.2.1"
+    "decompress": "^4.2.1",
+    "make-fetch-happen": "^15.0.3"
   },
   "bugs": {
     "url": "https://github.com/Llirik1337/nats-memory-server/issues"

@@ -1,60 +1,53 @@
-import { type IncomingMessage } from 'http';
-import http from 'http';
-import https from 'https';
-import path from 'path';
 import { createWriteStream } from 'fs';
+import path from 'path';
+import fetch from 'make-fetch-happen';
+import { pipeline } from 'stream/promises';
 
 const CONTENT_DISPOSITION_KEY = `content-disposition`;
 
-async function get(url: string): Promise<IncomingMessage> {
-  const urlObj = new URL(url);
-
-  if (urlObj.protocol === `https:`) {
-    return await new Promise<IncomingMessage>((resolve) => {
-      https.get(url, resolve);
-    });
-  } else if (urlObj.protocol === `http:`) {
-    return await new Promise<IncomingMessage>((resolve) => {
-      http.get(url, resolve);
-    });
-  }
-
-  throw new Error(`Unknown protocol ${urlObj.protocol}`);
+export interface DownloadFileOptions {
+  httpProxy?: string;
+  httpsProxy?: string;
+  noProxy?: string;
 }
 
-function isRedirect(statusCode: number | undefined): boolean {
-  return statusCode !== undefined && statusCode >= 300 && statusCode < 400;
-}
+export async function downloadFile(
+  url: string,
+  dir = `./`,
+  options: DownloadFileOptions = {},
+): Promise<string> {
+  const proxy = url.startsWith(`https:`)
+    ? options.httpsProxy
+    : options.httpProxy;
 
-export async function downloadFile(url: string, dir = `./`): Promise<string> {
-  let location = url;
-  let response: IncomingMessage | undefined;
-  while (response === undefined) {
-    const res = await get(location);
-    const statusCode = res.statusCode;
-    if (isRedirect(statusCode) && typeof res.headers.location === `string`) {
-      console.log(`Redirecting to ${res.headers.location}`);
-      location = res.headers.location;
-      continue;
-    } else {
-      response = res;
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fetchOptions: any = {};
+
+  if (proxy != null) {
+    fetchOptions.proxy = proxy;
+  }
+  if (options.noProxy != null) {
+    fetchOptions.noProxy = options.noProxy;
   }
 
-  return await new Promise<string>((resolve) => {
-    const fileName =
-      response?.headers[CONTENT_DISPOSITION_KEY]?.split(`filename=`)?.[1];
+  const response = await fetch(url, fetchOptions);
 
-    if (fileName == null) {
-      throw new Error(`No filename in content-disposition`);
-    }
+  if (!response.ok) {
+    throw new Error(`Failed to download ${url}: ${response.statusText}`);
+  }
 
-    const dis = path.resolve(dir, fileName);
-    const writeStream = createWriteStream(dis);
-    response?.pipe(writeStream);
-    response?.on(`end`, () => {
-      writeStream.close();
-      resolve(dis);
-    });
-  });
+  const fileName = response.headers
+    .get(CONTENT_DISPOSITION_KEY)
+    ?.split(`filename=`)?.[1];
+
+  if (fileName == null) {
+    throw new Error(`No filename in content-disposition`);
+  }
+
+  const destination = path.resolve(dir, fileName);
+  const fileStream = createWriteStream(destination);
+
+  await pipeline(response.body, fileStream);
+
+  return destination;
 }

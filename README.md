@@ -117,6 +117,9 @@ You can configure the library using one of the following files:
 - `version`: (string) NATS server version to download. Default: `v2.9.16`.
 - `buildFromSource`: (boolean) Whether to build from source instead of downloading. Default: `false`.
 - `binPath`: (string) Path to the NATS server binary.
+- `httpProxy`: (string) Proxy URL for HTTP requests.
+- `httpsProxy`: (string) Proxy URL for HTTPS requests.
+- `noProxy`: (string) Domain extensions to bypass the proxy.
 
 **Runtime Options:**
 - `port`: (number) Port to listen on. If not specified, a free port is chosen.
