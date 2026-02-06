@@ -45,7 +45,7 @@ export class NatsServer {
     }
 
     const projectPath = getProjectPath();
-    const projectConfig = getProjectConfig(projectPath);
+    const projectConfig = await getProjectConfig(projectPath);
 
     const config = { ...projectConfig, ...this.options };
     const { args, ip, port = await getFreePort(), binPath } = config;
