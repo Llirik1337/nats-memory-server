@@ -62,11 +62,9 @@
   },
   "devDependencies": {
     "@types/decompress": "^4.2.4",
+    "@types/jest": "^29.5.2",
+    "@types/make-fetch-happen": "^10.0.4",
     "@types/node": "^18.16.18",
-    "nats": "^2.15.0",
-    "prettier": "^2.8.8",
-    "typescript": "^5.1.5",
-    "lint-staged": "^13.2.3",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.0.1",
@@ -78,12 +76,17 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.1.1",
     "husky": "^8.0.3",
-    "@types/jest": "^29.5.2",
     "jest": "^29.5.0",
-    "ts-jest": "^29.1.0"
+    "lint-staged": "^13.2.3",
+    "nats": "^2.15.0",
+    "prettier": "^2.8.8",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.1.5"
   },
   "dependencies": {
-    "decompress": "^4.2.1"
+    "decompress": "^4.2.1",
+    "make-fetch-happen": "^15.0.3"
   },
   "bugs": {
     "url": "https://github.com/Llirik1337/nats-memory-server/issues"

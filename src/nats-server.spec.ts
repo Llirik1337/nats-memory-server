@@ -20,4 +20,51 @@ describe(NatsServer.name, () => {
     await natsCilent.close();
     await server.stop();
   });
+
+  it(`Should return same instance if start is called multiple times`, async () => {
+    const server = NatsServerBuilder.create().build();
+    const instance1 = await server.start();
+    const instance2 = await server.start();
+    expect(instance1).toBe(instance2);
+    await server.stop();
+  });
+
+  it(`Should resolve stop immediately if server is not running`, async () => {
+    const server = NatsServerBuilder.create().build();
+    await expect(server.stop()).resolves.toBeUndefined();
+  });
+
+  it(`Should return correct url, host and port`, async () => {
+    const port = 45321;
+    const ip = `127.0.0.1`;
+    const server = NatsServerBuilder.create().setPort(port).setIp(ip).build();
+
+    await server.start();
+
+    expect(server.getPort()).toBe(port);
+    expect(server.getHost()).toBe(ip);
+    expect(server.getUrl()).toBe(`nats://${ip}:${port}`);
+
+    await server.stop();
+  });
+
+  it(`Should use custom logger`, async () => {
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+    };
+
+    // We need verbose to be true for logger to be called during start/stop
+    const server = NatsServerBuilder.create()
+      .setLogger(logger)
+      .setVerbose(true)
+      .build();
+
+    await server.start();
+    await server.stop();
+
+    expect(logger.log).toHaveBeenCalled();
+  });
 });
