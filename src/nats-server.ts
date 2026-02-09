@@ -78,15 +78,21 @@ export class NatsServer {
         reject(err);
       });
 
-      this.process.stderr.on(`data`, (data: unknown) => {
+      this.process.stderr.on(`data`, (data: Buffer) => {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        const dataStr = data?.toString();
+        const dataStr = verbose ? data?.toString() : null;
 
         if (verbose && dataStr != null) {
           logger.log(dataStr);
         }
 
-        if (dataStr?.includes(`Server is ready`) === true) {
+        // Optimization: Avoid string allocation if verbose logging is disabled
+        const isReady =
+          dataStr != null
+            ? dataStr.includes(`Server is ready`)
+            : data.includes(`Server is ready`);
+
+        if (isReady) {
           if (verbose) {
             logger.log(`NATS server is ready!`);
           }
