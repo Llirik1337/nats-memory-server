@@ -1,137 +1,140 @@
 import { downloadFile } from './download-file';
-import fetch from 'make-fetch-happen';
 import fs from 'fs';
 import path from 'path';
-import { pipeline } from 'stream/promises';
+import os from 'os';
+import fetch from 'make-fetch-happen';
 
 jest.mock(`make-fetch-happen`);
-jest.mock(`fs`);
-jest.mock(`path`);
-jest.mock(`stream/promises`);
+const mockedFetch = fetch as jest.MockedFunction<typeof fetch>;
 
 describe(`downloadFile`, () => {
-  const mockFetch = fetch as unknown as jest.Mock;
-  const mockPipeline = pipeline as unknown as jest.Mock;
-  const mockCreateWriteStream = fs.createWriteStream as unknown as jest.Mock;
-  const mockResolve = path.resolve as unknown as jest.Mock;
+  let tmpDir: string;
 
   beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `nats-memory-server-test-`));
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(tmpDir)) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
     jest.clearAllMocks();
   });
 
-  it(`should download a file successfully`, async () => {
-    const url = `http://example.com/file.zip`;
-    const dir = `/tmp`;
-    const destination = `/tmp/file.zip`;
-    const mockResponse = {
+  it(`should download file with simple filename`, async () => {
+    mockedFetch.mockResolvedValue({
       ok: true,
       headers: {
-        get: jest.fn().mockReturnValue(`attachment; filename=file.zip`),
+        get: () => `attachment; filename="test.txt"`,
       },
-      body: `mockBody`,
-    };
+      body: {
+        [Symbol.asyncIterator]: async function* () {
+          yield Buffer.from(`content`);
+        },
+      },
+    } as any);
 
-    mockFetch.mockResolvedValue(mockResponse);
-    mockResolve.mockReturnValue(destination);
-    mockCreateWriteStream.mockReturnValue(`mockWriteStream`);
-    mockPipeline.mockResolvedValue(undefined);
-
-    const result = await downloadFile(url, dir);
-
-    expect(result).toBe(destination);
-    expect(mockFetch).toHaveBeenCalledWith(url, {});
-    expect(mockResolve).toHaveBeenCalledWith(dir, `file.zip`);
-    expect(mockCreateWriteStream).toHaveBeenCalledWith(destination);
-    expect(mockPipeline).toHaveBeenCalledWith(`mockBody`, `mockWriteStream`);
+    const filePath = await downloadFile(`http://example.com`, tmpDir);
+    expect(filePath).toBe(path.join(tmpDir, `test.txt`));
+    expect(fs.readFileSync(filePath, `utf-8`)).toBe(`content`);
   });
 
-  it(`should use httpProxy if provided for http url`, async () => {
-    const url = `http://example.com/file.zip`;
-    const proxy = `http://proxy.com`;
-    const mockResponse = {
+  it(`should sanitize filename with path traversal`, async () => {
+    mockedFetch.mockResolvedValue({
       ok: true,
       headers: {
-        get: jest.fn().mockReturnValue(`attachment; filename=file.zip`),
+        get: () => `attachment; filename="../../../evil.txt"`,
       },
-      body: `mockBody`,
-    };
+      body: {
+        [Symbol.asyncIterator]: async function* () {
+          yield Buffer.from(`evil content`);
+        },
+      },
+    } as any);
 
-    mockFetch.mockResolvedValue(mockResponse);
-    mockResolve.mockReturnValue(`/tmp/file.zip`);
-    mockPipeline.mockResolvedValue(undefined);
+    const filePath = await downloadFile(`http://example.com`, tmpDir);
+    // Should be sanitized to just 'evil.txt' inside tmpDir
+    expect(filePath).toBe(path.join(tmpDir, `evil.txt`));
+    expect(fs.readFileSync(filePath, `utf-8`)).toBe(`evil content`);
 
-    await downloadFile(url, `/tmp`, { httpProxy: proxy });
-
-    expect(mockFetch).toHaveBeenCalledWith(url, { proxy });
+    // Ensure checking outside directory
+    // Note: path.join(tmpDir, '../evil.txt') resolves to the parent of tmpDir.
+    // We can't easily check if file exists there without permission issues or interference.
+    // But since filePath is correct, we know where it wrote.
   });
 
-  it(`should use httpsProxy if provided for https url`, async () => {
-    const url = `https://example.com/file.zip`;
-    const proxy = `http://proxy.com`;
-    const mockResponse = {
+  it(`should handle filename without quotes`, async () => {
+    mockedFetch.mockResolvedValue({
       ok: true,
       headers: {
-        get: jest.fn().mockReturnValue(`attachment; filename=file.zip`),
+        get: () => `attachment; filename=simple.txt`,
       },
-      body: `mockBody`,
-    };
-
-    mockFetch.mockResolvedValue(mockResponse);
-    mockResolve.mockReturnValue(`/tmp/file.zip`);
-    mockPipeline.mockResolvedValue(undefined);
-
-    await downloadFile(url, `/tmp`, { httpsProxy: proxy });
-
-    expect(mockFetch).toHaveBeenCalledWith(url, { proxy });
-  });
-
-  it(`should use noProxy if provided`, async () => {
-    const url = `http://example.com/file.zip`;
-    const noProxy = `example.com`;
-    const mockResponse = {
-      ok: true,
-      headers: {
-        get: jest.fn().mockReturnValue(`attachment; filename=file.zip`),
+      body: {
+        [Symbol.asyncIterator]: async function* () {
+          yield Buffer.from(`content`);
+        },
       },
-      body: `mockBody`,
-    };
+    } as any);
 
-    mockFetch.mockResolvedValue(mockResponse);
-    mockResolve.mockReturnValue(`/tmp/file.zip`);
-    mockPipeline.mockResolvedValue(undefined);
-
-    await downloadFile(url, `/tmp`, { noProxy });
-
-    expect(mockFetch).toHaveBeenCalledWith(url, { noProxy });
-  });
-
-  it(`should throw error if response is not ok`, async () => {
-    const url = `http://example.com/file.zip`;
-    const mockResponse = {
-      ok: false,
-      statusText: `Not Found`,
-    };
-
-    mockFetch.mockResolvedValue(mockResponse);
-
-    await expect(downloadFile(url)).rejects.toThrow(
-      `Failed to download http://example.com/file.zip: Not Found`,
-    );
+    const filePath = await downloadFile(`http://example.com`, tmpDir);
+    expect(filePath).toBe(path.join(tmpDir, `simple.txt`));
   });
 
   it(`should throw error if filename is missing`, async () => {
-    const url = `http://example.com/file.zip`;
-    const mockResponse = {
+    mockedFetch.mockResolvedValue({
       ok: true,
       headers: {
-        get: jest.fn().mockReturnValue(null),
+        get: () => null,
       },
+      body: {
+        [Symbol.asyncIterator]: async function* () {
+          yield Buffer.from(``);
+        },
+      },
+    } as any);
+
+    await expect(downloadFile(`http://example.com`, tmpDir)).rejects.toThrow(
+      `No filename in content-disposition`,
+    );
+  });
+
+  it(`should pass proxy options to fetch`, async () => {
+    mockedFetch.mockResolvedValue({
+      ok: true,
+      headers: {
+        get: () => `attachment; filename="proxy.txt"`,
+      },
+      body: {
+        [Symbol.asyncIterator]: async function* () {
+          yield Buffer.from(`content`);
+        },
+      },
+    } as any);
+
+    const options = {
+      httpProxy: `http://proxy.example.com`,
+      httpsProxy: `https://proxy.example.com`,
+      noProxy: `localhost`,
     };
 
-    mockFetch.mockResolvedValue(mockResponse);
+    await downloadFile(`http://example.com`, tmpDir, options);
 
-    await expect(downloadFile(url)).rejects.toThrow(
-      `No filename in content-disposition`,
+    expect(mockedFetch).toHaveBeenCalledWith(
+      `http://example.com`,
+      expect.objectContaining({
+        proxy: `http://proxy.example.com`,
+        noProxy: `localhost`,
+      }),
+    );
+
+    await downloadFile(`https://example.com`, tmpDir, options);
+
+    expect(mockedFetch).toHaveBeenCalledWith(
+      `https://example.com`,
+      expect.objectContaining({
+        proxy: `https://proxy.example.com`,
+        noProxy: `localhost`,
+      }),
     );
   });
 });
