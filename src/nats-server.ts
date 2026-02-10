@@ -78,7 +78,14 @@ export class NatsServer {
         reject(err);
       });
 
+      let isReady = false;
+
       this.process.stderr.on(`data`, (data: unknown) => {
+        // Optimization: skip processing logs if not verbose and server is already ready
+        if (!verbose && isReady) {
+          return;
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         const dataStr = data?.toString();
 
@@ -87,6 +94,8 @@ export class NatsServer {
         }
 
         if (dataStr?.includes(`Server is ready`) === true) {
+          isReady = true;
+
           if (verbose) {
             logger.log(`NATS server is ready!`);
           }
