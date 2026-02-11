@@ -113,20 +113,17 @@ async function getProjectConfigUncached(
     path.resolve(projectPath, `./${configFileBaseName}${ext}`),
   );
 
-  const existenceChecks = await Promise.all(
-    possibleConfigPaths.map(async (p) => {
-      try {
-        await fsPromises.access(p);
-        return true;
-      } catch {
-        return false;
-      }
-    }),
-  );
+  let projectConfigPath: string | undefined;
 
-  const foundIndex = existenceChecks.findIndex((exists) => exists);
-  const projectConfigPath =
-    foundIndex >= 0 ? possibleConfigPaths[foundIndex] : undefined;
+  for (const p of possibleConfigPaths) {
+    try {
+      await fsPromises.access(p);
+      projectConfigPath = p;
+      break;
+    } catch {
+      // continue
+    }
+  }
 
   const packageJsonPath = path.resolve(projectPath, `./package.json`);
 
