@@ -43,7 +43,7 @@ export async function downloadFile(
     throw new Error(`No filename in content-disposition`);
   }
 
-  const fileName = path.basename(rawFileName.replace(/["';]/g, '').trim());
+  const fileName = path.basename(rawFileName.replace(/["';]/g, ``).trim());
   const destination = path.resolve(dir, fileName);
 
   if (!destination.startsWith(path.resolve(dir))) {

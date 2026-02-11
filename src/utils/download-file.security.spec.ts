@@ -4,9 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
-jest.mock('make-fetch-happen');
-jest.mock('fs');
-jest.mock('stream/promises');
+jest.mock(`make-fetch-happen`);
+jest.mock(`fs`);
+jest.mock(`stream/promises`);
 
 // We do NOT mock path here to test actual path resolution
 // or we can just inspect what path.resolve receives if we mock it.
@@ -14,7 +14,7 @@ jest.mock('stream/promises');
 // However, the original test mocks it.
 // Let's mock path but check arguments to ensure sanitization.
 
-describe('downloadFile Security', () => {
+describe(`downloadFile Security`, () => {
   const mockFetch = fetch as unknown as jest.Mock;
   const mockPipeline = pipeline as unknown as jest.Mock;
   const mockCreateWriteStream = fs.createWriteStream as unknown as jest.Mock;
@@ -23,12 +23,12 @@ describe('downloadFile Security', () => {
     jest.clearAllMocks();
   });
 
-  it('should prevent path traversal in filename', async () => {
-    const url = 'http://example.com/malicious.zip';
-    const dir = './downloads';
+  it(`should prevent path traversal in filename`, async () => {
+    const url = `http://example.com/malicious.zip`;
+    const dir = `./downloads`;
 
     // Malicious filename attempting to traverse up
-    const maliciousFilename = '../../../../etc/passwd';
+    const maliciousFilename = `../../../../etc/passwd`;
 
     const mockResponse = {
       ok: true,
@@ -37,11 +37,11 @@ describe('downloadFile Security', () => {
           .fn()
           .mockReturnValue(`attachment; filename=${maliciousFilename}`),
       },
-      body: 'mockBody',
+      body: `mockBody`,
     };
 
     mockFetch.mockResolvedValue(mockResponse);
-    mockCreateWriteStream.mockReturnValue('mockWriteStream');
+    mockCreateWriteStream.mockReturnValue(`mockWriteStream`);
     mockPipeline.mockResolvedValue(undefined);
 
     // We expect the function to either throw or sanitize the path.
@@ -66,14 +66,17 @@ describe('downloadFile Security', () => {
     // If vulnerable, destinationPath will be /etc/passwd (or relative equivalent)
     // If secure, it should be resolvedDir/passwd
 
-    console.log('Destination:', destinationPath);
-    console.log('Resolved Dir:', resolvedDir);
+    console.log(`Destination:`, destinationPath);
+    console.log(`Resolved Dir:`, resolvedDir);
 
-    const isChild = destinationPath.startsWith(resolvedDir);
+    const isChild = (destinationPath as string).startsWith(resolvedDir);
     if (!isChild) {
       throw new Error(
-        `Path traversal detected! Wrote to ${destinationPath} which is not inside ${resolvedDir}`,
+        `Path traversal detected! Wrote to ${String(
+          destinationPath,
+        )} which is not inside ${resolvedDir}`,
       );
     }
+    expect(isChild).toBe(true);
   });
 });

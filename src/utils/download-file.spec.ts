@@ -18,7 +18,7 @@ describe(`downloadFile`, () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockBasename.mockReturnValue('file.zip');
+    mockBasename.mockReturnValue(`file.zip`);
   });
 
   it(`should download a file successfully`, async () => {
@@ -35,7 +35,7 @@ describe(`downloadFile`, () => {
 
     mockFetch.mockResolvedValue(mockResponse);
     mockResolve.mockReturnValue(destination);
-    mockBasename.mockReturnValue('file.zip');
+    mockBasename.mockReturnValue(`file.zip`);
     mockCreateWriteStream.mockReturnValue(`mockWriteStream`);
     mockPipeline.mockResolvedValue(undefined);
 
