@@ -67,4 +67,23 @@ describe(NatsServer.name, () => {
 
     expect(logger.log).toHaveBeenCalled();
   });
+
+  it(`Should start with verbose false`, async () => {
+    const logger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+    };
+
+    const server = NatsServerBuilder.create()
+      .setVerbose(false)
+      .setLogger(logger)
+      .build();
+
+    await server.start();
+    expect(logger.log).not.toHaveBeenCalled();
+
+    await server.stop();
+  });
 });
