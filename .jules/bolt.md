@@ -1,0 +1,3 @@
+## 2026-02-13 - [Child Process Stderr Optimization]
+**Learning:** Consuming child process `stderr` streams with `toString()` and string searches on every chunk can be expensive, especially if the process is long-lived and verbose logging is disabled. Optimizing this by adding state flags (e.g., `isReady`) and early returns can significantly reduce CPU overhead.
+**Action:** When spawning child processes that require monitoring for a "ready" signal, always implement a state flag to stop expensive stream processing once the signal is received, while ensuring the stream continues to be consumed to prevent blocking.
