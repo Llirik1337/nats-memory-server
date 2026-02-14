@@ -78,7 +78,14 @@ export class NatsServer {
         reject(err);
       });
 
+      let isReady = false;
+
       this.process.stderr.on(`data`, (data: unknown) => {
+        // Bolt: optimization to avoid unnecessary string conversion and checks after server is ready
+        if (!verbose && isReady) {
+          return;
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         const dataStr = data?.toString();
 
@@ -86,7 +93,9 @@ export class NatsServer {
           logger.log(dataStr);
         }
 
-        if (dataStr?.includes(`Server is ready`) === true) {
+        if (!isReady && dataStr?.includes(`Server is ready`) === true) {
+          isReady = true;
+
           if (verbose) {
             logger.log(`NATS server is ready!`);
           }

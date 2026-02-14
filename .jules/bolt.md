@@ -1,0 +1,3 @@
+## 2024-02-14 - Stderr Stream Optimization
+**Learning:** Consuming `stderr` or `stdout` streams with expensive operations (like `toString()`) in a `data` listener can add significant CPU overhead, especially if the stream is chatty or if the operation is unnecessary after a certain state (like startup readiness).
+**Action:** When monitoring streams for a specific condition (e.g., "Server is ready"), introduce a state flag (e.g., `isReady`) to bypass the expensive checks once the condition is met. If the data is not needed afterwards (e.g., logging is disabled), return early to avoid processing altogether.
