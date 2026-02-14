@@ -1,0 +1,4 @@
+## 2025-05-15 - Path Traversal in File Download
+**Vulnerability:** The `downloadFile` utility blindly extracted filenames from the `Content-Disposition` header and used `path.resolve` without sanitization. This allowed attackers to write files outside the intended directory using path traversal sequences (e.g., `../../../etc/passwd`).
+**Learning:** `path.resolve` alone is insufficient for security when dealing with user-controlled filenames. Simple string splitting on `Content-Disposition` is also fragile and prone to exploitation.
+**Prevention:** Always sanitize filenames using `path.basename()` to strip directory components. Additionally, verify the resolved path is within the intended directory using `.startsWith()`. Use robust regex or libraries for parsing complex headers like `Content-Disposition`.
