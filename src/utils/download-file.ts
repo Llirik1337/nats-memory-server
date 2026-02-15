@@ -36,7 +36,7 @@ export async function downloadFile(
     throw new Error(`Failed to download ${url}: ${response.statusText}`);
   }
 
-  const fileName = response.headers
+  let fileName = response.headers
     .get(CONTENT_DISPOSITION_KEY)
     ?.split(`filename=`)?.[1];
 
@@ -44,7 +44,12 @@ export async function downloadFile(
     throw new Error(`No filename in content-disposition`);
   }
 
+  fileName = path.basename(fileName);
   const destination = path.resolve(dir, fileName);
+
+  if (!destination.startsWith(path.resolve(dir))) {
+    throw new Error(`Invalid filename: Path traversal detected`);
+  }
   const fileStream = createWriteStream(destination);
 
   await pipeline(response.body, fileStream);
