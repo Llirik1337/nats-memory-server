@@ -70,6 +70,8 @@ export class NatsServer {
       this.host = ip;
       this.port = port;
 
+      let isReady = false;
+
       this.process.once(`error`, (err) => {
         if (verbose) {
           logger.error(`NATS server error:`, err);
@@ -79,6 +81,21 @@ export class NatsServer {
       });
 
       this.process.stderr.on(`data`, (data: unknown) => {
+        // Optimization: Stop processing output for readiness check if already ready.
+        // If verbose is false, we can skip string conversion entirely.
+        if (isReady) {
+          if (verbose) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            const dataStr = data?.toString();
+
+            if (dataStr != null) {
+              logger.log(dataStr);
+            }
+          }
+
+          return;
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         const dataStr = data?.toString();
 
@@ -87,6 +104,8 @@ export class NatsServer {
         }
 
         if (dataStr?.includes(`Server is ready`) === true) {
+          isReady = true;
+
           if (verbose) {
             logger.log(`NATS server is ready!`);
           }
